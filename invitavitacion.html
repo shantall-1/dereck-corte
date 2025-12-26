@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dereck Quiñones Cueva - Mi corte de cabello</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+    <!-- Librería de Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --jungle-green: #2ecc72;
+            --deep-green: #1b5e20;
+            --safari-orange: #e67e22;
+            --safari-yellow: #f1c40f;
+            --paper-bg: #fffcf2;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body, html { 
+            margin: 0; padding: 0; 
+            overflow: hidden; 
+            background: #0a1a0a; 
+            font-family: 'Montserrat', sans-serif; 
+            height: 100%; width: 100%;
+        }
+
+        /* --- PANTALLA DE INICIO --- */
+        #intro-overlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at center, var(--jungle-green) 0%, var(--deep-green) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            text-align: center;
+        }
+
+        .intro-content { z-index: 1001; padding: 20px; }
+
+        .title-top {
+            font-family: 'Luckiest Guy', cursive;
+            font-size: 1.8rem;
+            color: white;
+            letter-spacing: 2px;
+            margin: 0;
+            text-shadow: 3px 3px 0px var(--deep-green);
+        }
+
+        .title-name {
+            font-family: 'Luckiest Guy', cursive;
+            font-size: clamp(3rem, 15vw, 5rem);
+            color: var(--safari-yellow);
+            margin: 10px 0;
+            text-shadow: 4px 4px 0px var(--safari-orange);
+        }
+
+        #start-btn {
+            margin-top: 30px;
+            background: #fff;
+            color: var(--deep-green);
+            border: none;
+            padding: 15px 40px;
+            font-family: 'Luckiest Guy', cursive;
+            font-size: 1.8rem;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 0px #ddd;
+            transition: transform 0.2s;
+        }
+
+        #start-btn:active { transform: translateY(4px); box-shadow: 0 4px 0px #ddd; }
+
+        /* --- CONTENIDO PRINCIPAL --- */
+        #main-content {
+            position: absolute;
+            inset: 0;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 5;
+            background-color: #0a1a0a;
+        }
+
+        #leaf-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 1; 
+            pointer-events: none;
+        }
+
+        #card {
+            width: 90%;
+            max-width: 380px;
+            height: 85vh;
+            background: var(--paper-bg);
+            border-radius: 30px;
+            border: 6px solid #fff;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            position: relative;
+            z-index: 10;
+            opacity: 0;
+            transform: scale(0.8);
+            scrollbar-width: none;
+        }
+        #card::-webkit-scrollbar { display: none; }
+
+        .header-bg {
+            min-height: 160px;
+            background: url('https://i.pinimg.com/1200x/d5/3f/a2/d53fa238a42de2f4f4eaba3f4f2eb7f0.jpg') center/cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .header-bg::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(transparent, var(--paper-bg));
+        }
+
+        .photo-container {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 5px solid white;
+            background: #ddd;
+            z-index: 5;
+            position: relative;
+            overflow: hidden;
+            margin-top: 60px;
+            transform: scale(0);
+        }
+
+        .photo-container img { width: 100%; height: 100%; object-fit: cover; }
+
+        .body-content { padding: 20px; text-align: center; }
+
+        .badge {
+            display: inline-block;
+            background: var(--safari-orange);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .kids-title {
+            font-family: 'Luckiest Guy', cursive;
+            color: var(--deep-green);
+            font-size: 2rem;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .info-item {
+            background: #f0f7f0;
+            padding: 10px;
+            border-radius: 15px;
+            border: 1px solid #e0eee0;
+        }
+
+        .info-item p { margin: 5px 0 0; font-weight: 900; color: var(--deep-green); font-size: 1rem; }
+        .info-item span { font-size: 0.6rem; color: #666; font-weight: 700; text-transform: uppercase; }
+
+        .btn-boom {
+            background: var(--jungle-green);
+            color: white;
+            padding: 15px;
+            border-radius: 20px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-family: 'Luckiest Guy', cursive;
+            font-size: 1.2rem;
+            box-shadow: 0 5px 0px var(--deep-green);
+            margin-top: 10px;
+        }
+
+        .floating-animal {
+            position: absolute;
+            width: 80px;
+            z-index: 20;
+            pointer-events: none;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.3));
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="intro-overlay">
+        <div class="intro-content">
+            <p class="title-top">MI CAMBIO DE LOOK</p>
+            <h1 class="title-name">DERECK</h1>
+            <button id="start-btn">¡VER INVITACIÓN!</button>
+        </div>
+    </div>
+
+    <div id="leaf-canvas"></div>
+
+    <div id="main-content">
+        <img id="monkey" src="https://images.vexels.com/media/users/3/204729/isolated/preview/8b59095911922f0575457a0e0a9388ec-mono-lindo-animal-plano.png" class="floating-animal" style="top: 15%; left: 5%;">
+        <img id="tiger" src="https://www.clipartmax.com/png/full/152-1524453_pin-by-dianalorena-sanchez-on-kids-clipart-animales-de-la-selva-animados.png" class="floating-animal" style="bottom: 15%; right: 5%;">
+
+        <div id="card">
+            <div class="header-bg">
+                <div class="photo-container" id="photo">
+                    <img src="WhatsApp Image 2025-12-26 at 1.21.40 PM.jpeg" alt="Dereck" onerror="this.src='https://via.placeholder.com/150/2ecc71/ffffff?text=DERECK'">
+                </div>
+            </div>
+
+            <div class="body-content">
+                <span class="badge">🎒 Expedición Safari</span>
+                <h1 class="kids-title">DERECK <br> QUIÑONES CUEVA</h1>
+                
+                <p style="color: #444; font-weight: 700; margin: 15px 0; font-size: 0.9rem;">
+                    ¡Te invito a celebrar mi cambio de look en una aventura inolvidable!
+                </p>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span>Día</span>
+                        <p>27 Dic</p>
+                    </div>
+                    <div class="info-item">
+                        <span>Hora</span>
+                        <p>7:00 PM</p>
+                    </div>
+                    <div class="info-item" style="grid-column: span 2;">
+                        <span>Ubicación</span>
+                        <p>Ventanilla - Callao</p>
+                    </div>
+                </div>
+
+                <a href="https://wa.me/51967518844?text=¡Dereck! Confirmo mi asistencia a tu corte de pelo 🦁" target="_blank" class="btn-boom" id="cta-btn">
+                    ¡CONFIRMAR AQUÍ! 🦁
+                </a>
+
+                <p style="font-family: 'Luckiest Guy'; color: var(--safari-orange); font-size: 1.4rem; margin-top: 15px;">¡TE ESPERAMOS!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Animación inicial del botón
+        window.onload = () => {
+            gsap.from("#start-btn", { scale: 0, duration: 0.8, ease: "back.out(1.7)" });
+        };
+
+        document.getElementById('start-btn').addEventListener('click', function() {
+            const btn = this;
+            const overlay = document.getElementById('intro-overlay');
+            const main = document.getElementById('main-content');
+            
+            gsap.to(btn, { scale: 0, opacity: 0, duration: 0.3 });
+            gsap.to(overlay, { 
+                opacity: 0, 
+                duration: 0.5, 
+                onComplete: () => {
+                    overlay.style.display = 'none';
+                    main.style.display = 'flex';
+                    initThreeLeaves();
+                    
+                    // --- LANZAR RÁFAGA DE CONFETI ---
+                    lanzarConfetiExpress();
+
+                    const tl = gsap.timeline();
+                    tl.to("#card", { opacity: 1, scale: 1, duration: 1, ease: "back.out(1.2)" })
+                      .to("#photo", { scale: 1, duration: 0.8, ease: "elastic.out(1, 0.5)" }, "-=0.5")
+                      .to(".floating-animal", { opacity: 1, duration: 1, stagger: 0.2 }, "-=0.5");
+                    
+                    gsap.to("#cta-btn", { scale: 1.05, repeat: -1, yoyo: true, duration: 0.8 });
+                    gsap.to("#monkey", { y: "+=20", repeat: -1, yoyo: true, duration: 2, ease: "sine.inOut" });
+                    gsap.to("#tiger", { y: "-=20", repeat: -1, yoyo: true, duration: 2.5, ease: "sine.inOut" });
+                }
+            });
+        });
+
+        // --- FUNCIÓN DE CONFETI EXPRESS (2 SEGUNDOS) ---
+        function lanzarConfetiExpress() {
+            const duration = 2 * 1000; // 2 segundos exactos
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100, colors: ['#2ecc71', '#e67e22', '#f1c40f', '#ffffff'] };
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                const particleCount = 50 * (timeLeft / duration);
+                // Lanzar desde posiciones aleatorias superiores
+                confetti(Object.assign({}, defaults, { 
+                    particleCount, 
+                    origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } 
+                }));
+                confetti(Object.assign({}, defaults, { 
+                    particleCount, 
+                    origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } 
+                }));
+            }, 250);
+        }
+
+        // --- SISTEMA DE HOJAS CAYENDO (3D) ---
+        function initThreeLeaves() {
+            const container = document.getElementById('leaf-canvas');
+            if (container.children.length > 0) return;
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
+
+            const leafGeo = new THREE.BoxGeometry(8, 12, 1);
+            const colors = [0x2ecc71, 0x27ae60, 0xf1c40f];
+            const leaves = [];
+
+            for (let i = 0; i < 30; i++) {
+                const mat = new THREE.MeshBasicMaterial({ 
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    side: THREE.DoubleSide 
+                });
+                const leaf = new THREE.Mesh(leafGeo, mat);
+                leaf.position.set(Math.random() * 400 - 200, Math.random() * 400 - 200, Math.random() * 100);
+                leaf.userData = { speed: Math.random() * 0.5 + 0.2, rot: Math.random() * 0.02 };
+                scene.add(leaf);
+                leaves.push(leaf);
+            }
+
+            camera.position.z = 200;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                leaves.forEach(l => {
+                    l.position.y -= l.userData.speed;
+                    l.rotation.x += l.userData.rot;
+                    l.rotation.y += l.userData.rot;
+                    if (l.position.y < -200) l.position.y = 200;
+                });
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+    </script>
+</body>
+</html>
